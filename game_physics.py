@@ -81,7 +81,7 @@ class Player:
          
          
 class Game:
-    def __init__(self, player_0_name, player_1_name) -> None:
+    def __init__(self, player_0_name=None, player_1_name=None) -> None:
         
         self.player_0 = Player(s.ship_sizes, player_0_name)         
         self.player_1 = Player(s.ship_sizes, player_1_name)         
@@ -91,7 +91,7 @@ class Game:
         self.game_over_state = False
         
     
-    def move (self, coords):
+    def move (self, coords) -> int:
         # Setting the correct player based on turn to avoid multiple input variables 
         
         attacker = self.player_1 if self.player_turn else self.player_0
@@ -105,6 +105,8 @@ class Game:
                 attacker.hit_ships.append(coords)
                 enemy.world[coords] = -1
                 
+                return_value = 1
+                
                 # A ship is sunk when the all coordinates of a ship are in the hit array
                 for ships in enemy.ships:
                     if all(s in attacker.hit_ships for s in ships.index ):
@@ -112,24 +114,40 @@ class Game:
                         enemy.world[ships.index] = -100
                         enemy.ships.remove(ships)
                         # print(enemy.ships)
+                        return_value = 100
                         
+                        # Endgame
                         if len(enemy.ships_coords) == len(attacker.hit_ships):
                             self.game_over_state = True
-                            print(attacker.name)
+                            # print(attacker.name)
+                            return -1
                                     
                         break
                         
             else:
                 # A miss is set to zero
                 attacker.search[coords] = 0
+                return_value = 0 
                 
-
             if not self.game_over_state:
                 self.player_turn = not self.player_turn # Switch turn
+            
+            return return_value
+            
 
 
+    def random_ai(self):
+        player = self.player_1 if self.player_turn else self.player_0
 
+        unexplored = [i for i, value in enumerate(player.search) if value == 0.1]
+        return random.choice(unexplored)
 
+    def seqential_ai(self):
+        
+        player = self.player_1 if self.player_turn else self.player_0
+        unexplored = [i for i, value in enumerate(player.search) if value == 0.1]
+        return unexplored[0]
+    
 
 
 
@@ -163,3 +181,27 @@ class Game:
 #     for i in range(s.GRID_SIZE):
 #         print( " ".join(str(search_array [ (i-1)*s.GRID_SIZE : i*s.GRID_SIZE])) )
         
+
+
+player_1_wins = 0       
+player_0_wins = 0       
+
+for i in range(100):
+    
+    game = Game("1", "2")
+    player_1_strategy = game.random_ai
+    player_0_strategy = game.seqential_ai
+    
+    while not game.game_over_state:
+        index = player_1_strategy() if game.player_turn else player_0_strategy()
+        game.move(index)
+    
+    if game.player_turn: 
+        player_1_wins += 1
+    if not game.player_turn: 
+        player_0_wins += 1 
+        
+
+
+print("Player 1 won: ", player_1_wins )
+print("Player 0 won: ", player_0_wins )
