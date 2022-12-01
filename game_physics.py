@@ -44,17 +44,21 @@ class Ship:
         
               
 class Player:
-    def __init__(self, fleet) -> None:
+    def __init__(self, fleet, name="Commander") -> None:
+        self.name = name
         self.ships = []
-        self.search = [-0.1] * (s.GRID_SIZE*s.GRID_SIZE)
+        
+        self.search = np.asarray([0.1] * (s.GRID_SIZE*s.GRID_SIZE))
+        self.hit_ships = [] # Coordinates of successful hits
+        
         self.arrange_ships(sizes = fleet) 
         
         self.ships_coords = [s.index for s in self.ships]
         self.ships_coords = sum(self.ships_coords, [])
-        
-        self.world = np.asarray(["~"] * (s.GRID_SIZE*s.GRID_SIZE))
-        self.world[self.ships_coords] = ["S"] * len(self.ships_coords)
-        self.world = np.reshape(self.world,(s.GRID_SIZE,s.GRID_SIZE))
+
+        self.world = np.asarray([0.1] * (s.GRID_SIZE*s.GRID_SIZE))
+        self.world[self.ships_coords] = [1] * len(self.ships_coords)
+        # self.world = np.reshape(self.world,(s.GRID_SIZE,s.GRID_SIZE))
          
     def arrange_ships(self, sizes):
         
@@ -77,16 +81,59 @@ class Player:
          
          
 class Game:
-    def __init__(self) -> None:
-        self.player_0 = Player(s.ship_sizes)         
-        self.player_1 = Player(s.ship_sizes)         
+    def __init__(self, player_0_name, player_1_name) -> None:
         
-        # Player 0 is False and Player 1 is True
-        player_turn = True   # Boolean to keep track of the player 0 or 1
+        self.player_0 = Player(s.ship_sizes, player_0_name)         
+        self.player_1 = Player(s.ship_sizes, player_1_name)         
+        
+        # Player 0 is False and Player 1 is True\
+        self.player_turn = True   # Boolean to keep track of the player 0 or 1
         self.game_over_state = False
         
+    
+    def move (self, coords):
+        # Setting the correct player based on turn to avoid multiple input variables 
         
+        attacker = self.player_1 if self.player_turn else self.player_0
+        enemy = self.player_0 if self.player_turn else self.player_1
+
+        if attacker.search[coords] == 0.1: # Only if passed index is unknown make a move
             
+            # Check if the passed index is in the enemy ship index list
+            if coords in enemy.ships_coords:
+                attacker.search[coords] = 1       
+                attacker.hit_ships.append(coords)
+                enemy.world[coords] = -1
+                
+                # A ship is sunk when the all coordinates of a ship are in the hit array
+                for ships in enemy.ships:
+                    if all(s in attacker.hit_ships for s in ships.index ):
+                        attacker.search[ships.index] = [100] * ships.size
+                        enemy.world[ships.index] = -100
+                        enemy.ships.remove(ships)
+                        # print(enemy.ships)
+                        
+                        if len(enemy.ships_coords) == len(attacker.hit_ships):
+                            self.game_over_state = True
+                            print(attacker.name)
+                                    
+                        break
+                        
+            else:
+                # A miss is set to zero
+                attacker.search[coords] = 0
+                
+
+            if not self.game_over_state:
+                self.player_turn = not self.player_turn # Switch turn
+
+
+
+
+
+
+
+           
 # s = Ship(3)
 # print(s.orientation)
 # print(s.index )
@@ -99,3 +146,20 @@ class Game:
 
 # print(p.world)
 # print(p.ships_coords)
+
+
+# game = Game()
+
+# print("Player False: \n", game.player_0.world)
+# print("\nPlayer True: \n", game.player_1.world)
+
+# while True:
+#     print(game.player_turn)
+#     i = int(input("Enter index: "))
+#     game.move(i)
+    
+    
+#     search_array = game.player_0.search if game.player_turn else game.player_1.search
+#     for i in range(s.GRID_SIZE):
+#         print( " ".join(str(search_array [ (i-1)*s.GRID_SIZE : i*s.GRID_SIZE])) )
+        
