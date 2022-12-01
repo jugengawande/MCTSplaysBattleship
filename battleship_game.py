@@ -11,6 +11,7 @@ WINDOW = pygame.display.set_mode((s.WIDTH, s.HEIGHT), flags=pygame.SRCALPHA)
 
 HUMAN_0 = False
 HUMAN_1 = False
+
 p1,p2 = ["Computer","Computer"]
 
 # WINDOW.fill((s.BLACK))
@@ -93,23 +94,22 @@ while animation:
                 game = Game(p1,p2)
                 break
     
-    if not game.game_over_state:
+
+    if ((game.player_turn and HUMAN_1) or (not game.player_turn and HUMAN_0) ) and not game.game_over_state:
         index = None
-        if (game.player_turn and HUMAN_1) or (not game.player_turn and HUMAN_0):
             
-                if e.type == pygame.MOUSEBUTTONDOWN:
-                    
-                    x, y = pygame.mouse.get_pos()
-                    if (x > s.SQUARE * (s.GRID_SIZE+2) and x < s.SQUARE * (2*s.GRID_SIZE+2)) and ((game.player_turn == True and y > s.SQUARE and y < s.SQUARE*(s.GRID_SIZE+1)) or (game.player_turn == False and y > s.SQUARE * (s.GRID_SIZE+2) and y < s.SQUARE * (2*s.GRID_SIZE+2))) :
-                        row = (y // s.SQUARE) - (1 if game.player_turn else ( 2 + s.GRID_SIZE) )
-                        col = (x // s.SQUARE) - (2 + s.GRID_SIZE)
-                        # print(row,col)
-                        index = row * s.GRID_SIZE + col
+        if e.type == pygame.MOUSEBUTTONDOWN:
+            
+            x, y = pygame.mouse.get_pos()
+            if (x > s.SQUARE * (s.GRID_SIZE+2) and x < s.SQUARE * (2*s.GRID_SIZE+2)) and ((game.player_turn == True and y > s.SQUARE and y < s.SQUARE*(s.GRID_SIZE+1)) or (game.player_turn == False and y > s.SQUARE * (s.GRID_SIZE+2) and y < s.SQUARE * (2*s.GRID_SIZE+2))) :
+                row = (y // s.SQUARE) - (1 if game.player_turn else ( 2 + s.GRID_SIZE) )
+                col = (x // s.SQUARE) - (2 + s.GRID_SIZE)
+                # print(row,col)
+                index = row * s.GRID_SIZE + col
                        
-        else:  
-            
-            #Random Player
-            index = game.random_ai()
+    elif not game.game_over_state:  
+        #Random Player
+        index = game.sequential_strategy()
         
         if index != None:
             r = game.move(index) 
