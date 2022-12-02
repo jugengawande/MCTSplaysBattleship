@@ -47,6 +47,7 @@ class Player:
         self.ships = []
         
         self.search = np.asarray([0.1] * (s.WORLD_SIZE()))
+        
         self.hit_ships = [] # Coordinates of successful hits
         
         self.arrange_ships(sizes = fleet) 
@@ -64,10 +65,10 @@ class Player:
             
             valid_position = False
            
-            
             while not valid_position:
                 ship = Ship(s)
                 
+                # Check if the indexes generated intersect with another placed ship
                 for fleet in self.ships:
                     if set(ship.index).intersection(fleet.index):
                         valid_position = False
