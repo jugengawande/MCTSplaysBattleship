@@ -1,6 +1,5 @@
 import random
-import game_variables as s
-
+from game_variables import Settings as s
 import numpy as np
 
 
@@ -26,7 +25,7 @@ class Ship:
         
         start_index = self.row * s.GRID_SIZE + self.col
         
-        if (start_index + self.size) >= s.WORLD_SIZE:
+        if (start_index + self.size) >= s.WORLD_SIZE():
             # print("Invalid start position")
             return []
         
@@ -44,11 +43,10 @@ class Ship:
         
               
 class Player:
-    def __init__(self, fleet, name="Commander") -> None:
-        self.name = name
+    def __init__(self, fleet) -> None:
         self.ships = []
         
-        self.search = np.asarray([0.1] * (s.GRID_SIZE*s.GRID_SIZE))
+        self.search = np.asarray([0.1] * (s.WORLD_SIZE()))
         self.hit_ships = [] # Coordinates of successful hits
         
         self.arrange_ships(sizes = fleet) 
@@ -56,7 +54,7 @@ class Player:
         self.ships_coords = [s.index for s in self.ships]
         self.ships_coords = sum(self.ships_coords, [])
 
-        self.world = np.asarray([0.1] * (s.GRID_SIZE*s.GRID_SIZE))
+        self.world = np.asarray([0.1] * (s.WORLD_SIZE()))
         self.world[self.ships_coords] = [1] * len(self.ships_coords)
         # self.world = np.reshape(self.world,(s.GRID_SIZE,s.GRID_SIZE))
          
@@ -81,26 +79,34 @@ class Player:
          
          
 class Game:
-    def __init__(self, player_0_name=None, player_1_name=None) -> None:
+    def __init__(self, human_player_1, human_player_0) -> None:
         '''
         TODO: 
         Takes a player tuple 
         '''
         
-        
-        self.player_0 = Player(s.ship_sizes, player_0_name)         
-        self.player_1 = Player(s.ship_sizes, player_1_name)         
+        self.player_0 = Player(s.ship_sizes)         
+        self.player_1 = Player(s.ship_sizes)         
         
         # Player 0 is False and Player 1 is True\
-        self.player_turn = True   # Boolean to keep track of the player 0 or 1
+        self.turn = True   # Boolean to keep track of the player 0 or 1
+        self.ai_turn = True if not human_player_1 else False
+        
+        self.human_player_1 = human_player_1
+        self.human_player_0 = human_player_0
+        
+        
         self.game_over_state = False
+        self.total_hits = 0
+        self.total_miss = 0 
+        self.winner = None
         
     
-    def move (self, coords) -> int:
+    def move (self, coords):
         # Setting the correct player based on turn to avoid multiple input variables 
         
-        attacker = self.player_1 if self.player_turn else self.player_0
-        enemy = self.player_0 if self.player_turn else self.player_1
+        attacker = self.player_1 if self.turn else self.player_0
+        enemy = self.player_0 if self.turn else self.player_1
 
         if attacker.search[coords] == 0.1: # Only if passed index is unknown make a move
             
@@ -110,8 +116,7 @@ class Game:
                 attacker.search[coords] = 1       
                 attacker.hit_ships.append(coords)
                 enemy.world[coords] = -1
-                
-                return_value = 1
+
                 
                 # A ship is sunk when the all coordinates of a ship are in the hit array
                 for ships in enemy.ships:
@@ -121,41 +126,60 @@ class Game:
                         enemy.world[ships.index] = -100
                         enemy.ships.remove(ships)
                         # print(enemy.ships)
-                        return_value = 100
+ 
                         
                         # Endgame
                         if len(enemy.ships_coords) == len(attacker.hit_ships):
                             self.game_over_state = True
+                            self.total_hits = len(attacker.hit_ships)
+                            self.total_miss = np.count_nonzero(attacker.search == 0)
+                            self.winner = "Player 1" if self.turn else "Player 0"
                             # print(attacker.name)
-                            return -1
-                                    
+                                        
                         break
                         
             else:
                 # A miss is set to zero
                 attacker.search[coords] = 0
-                return_value = 0 
                 
             if not self.game_over_state:
-                self.player_turn = not self.player_turn # Switch turn
-            
-            return return_value
-            
+                self.turn = not self.turn # Switch turn
+                
+            if self.turn: self.ai_turn = True if not self.human_player_1 else False
+            if not self.turn: self.ai_turn = True if not self.human_player_0 else False
 
 
     def random_strategy(self):
-        player = self.player_1 if self.player_turn else self.player_0
+        player = self.player_1 if self.turn else self.player_0
 
         unexplored = [i for i, value in enumerate(player.search) if value == 0.1]
         return random.choice(unexplored)
 
     def sequential_strategy(self):
         
-        player = self.player_1 if self.player_turn else self.player_0
+        player = self.player_1 if self.turn else self.player_0
         
         unexplored = [i for i, value in enumerate(player.search) if value == 0.1]
         return unexplored[0]
 
     def search_and_target_strategy(self):
+        
+        
+
         return None
 
+
+class Engine:
+    
+    def __init__(self, _game, isHuman1 = True, isHuman0 = True ) -> None:
+        self.game = _game
+        
+        self.player1 = isHuman1
+        self.player0 = isHuman0
+        
+        self.strategy = [self.game.sequential_ai(), self.game.random_ai()]
+        
+
+         
+        
+        pass
