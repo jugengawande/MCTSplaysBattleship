@@ -5,14 +5,14 @@ from game_variables import Settings as s
 from game_physics import Game
 
 s.set_grid_size(size = 5)
-compete_mode = False
+compete_mode = True
 
 pygame.init()
 pygame.display.set_caption("BATTLESHIP")
 
 WINDOW = pygame.display.set_mode(s.GRID_DIM() if not compete_mode else s.COMPETE_GRID_DIM(), flags=pygame.SRCALPHA)
 
-HUMAN_1 = True
+HUMAN_1 = False
 HUMAN_0 = False
 
 # Automatically set Player 0 to be computer player if compete mode is on
@@ -101,9 +101,12 @@ while animation:
             if e.key == pygame.K_SPACE:
                 game = Game(HUMAN_1, HUMAN_0)
                 break
+            
+            if e.key == pygame.K_s:
+                print(game.player_1.search)
         
     if not game.game_over_state:
-        if e.type == pygame.MOUSEBUTTONDOWN:
+        if e.type == pygame.MOUSEBUTTONDOWN and not game.ai_turn:
             
             x, y = pygame.mouse.get_pos()
             if (x > s.SQUARE * (s.GRID_SIZE+2) and x < s.SQUARE * (2*s.GRID_SIZE+2)) :
@@ -137,7 +140,8 @@ while animation:
         
         
         if game.ai_turn: 
-            index = game.random_strategy()
+            index = game.mcts()
+            print(index)
             game.move(index)
         
     else:

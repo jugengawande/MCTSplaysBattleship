@@ -1,7 +1,8 @@
 import random
-from game_variables import Settings as s
 import numpy as np
-
+import matplotlib.pyplot as plt 
+import seaborn as sns
+from game_variables import Settings as s
 
 class Ship:
     
@@ -163,24 +164,107 @@ class Game:
         unexplored = [i for i, value in enumerate(player.search) if value == 0.1]
         return unexplored[0]
 
-    def search_and_target_strategy(self):
-        
-        
-
-        return None
-
-
-class Engine:
     
-    def __init__(self, _game, isHuman1 = True, isHuman0 = True ) -> None:
-        self.game = _game
+    def mcts(self):
         
-        self.player1 = isHuman1
-        self.player0 = isHuman0
+        player = self.player_1 if self.turn else self.player_0
+        opponent = self.player_0 if self.turn else self.player_1
         
-        self.strategy = [self.game.sequential_ai(), self.game.random_ai()]
+        engine = MCTS()
+        
+        return engine.select_move(player.search, opponent.ships )
+
         
 
          
+class MCTS:
+    
+    def __init__(self) -> None:
+        self.state = None
+        self.sim_board = []
+    
+    def simulate_board(self, BOARD, SHIPS):
+        # Select a random ship size from remaining ships
+        # ship_length = random.choice(ships) 
         
-        pass
+        self.state = BOARD.copy().reshape((5,5))
+        
+        self.state[self.state == 100] = 0 # Sunk ships are unaccessible regions
+        self.state[self.state == 1] = 10
+        self.state[self.state == 0.1] = 1
+        
+        # ship_remaining = SHIPS # Fleet still standing
+        ship_remaining = [k.size for k in SHIPS] # Fleet still standing
+        
+        
+        for i in range(1000):
+            
+            # Place remaining ships on board in probable places
+            
+            # sim = np.array([0]*s.WORLD_SIZE()).reshape(5,5)
+            sim = self.state.copy()
+            
+            # for s in ship_remaining:
+            
+            size = random.choice(ship_remaining)
+            valid_position = False
+            
+            while not valid_position:
+                ship = Ship(size)
+                
+                ship_coords = np.unravel_index( ship.index, (5,5))
+
+                ship_coords_tuple = zip(ship_coords[0], ship_coords[1])
+                
+                for c in ship_coords_tuple:
+                    if sim[c[0],c[1]] in [0, 5]:
+                            valid_position = False
+                            break
+                    else:
+                        valid_position = True
+              
+            if valid_position:                
+                for i in ship_coords:
+                    sim[ship_coords[0],ship_coords[1]] = 5 # Turns unknowns into knows
+            
+            # size = random.choice(ship_remaining)
+            # unexplored = [i for i, v in enumerate(board.flatten()) if v == 1]
+            
+            # ship_placed = False
+            # while not ship_placed:
+                
+            #     index = random.choice (unexplored) 
+            #     coord = np.unravel_index(index, (5,5) )
+            #     orientation = random.choice("H", "V")
+                
+            #     if orientation == "H":
+            #         if (range(index, index+size) in unexplored) and (coord[1]+size < s.GRID_SIZE) 
+            #             sim[range(coord[0],coord[0]+size), coord[1]*size] += 5
+                
+            # print(sim)
+        
+            self.sim_board.append(sim)
+                
+         
+    def select_move(self, board, ships):
+        
+        self.simulate_board(board,ships)
+        # print(self.sim_board)
+        b = sum(self.sim_board)
+        # print(b.flatten())
+        b = b - self.state * len(self.sim_board) 
+        
+        # sns.heatmap(b)
+        # plt.show()
+        # print(b.flatten())
+        return np.argmax(b) 
+
+
+# ships = [2,3,4]
+# board = np.asarray([0.1, 1.,  0.1, 0.,  0.1, 0.1, 0.1, 0.1, 0.1, 0.,  0.1, 0.,  0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.,  0.,  0.1, 0.1, 0.1, 0.1, 0 ])
+# print("Initial Board")
+# print(board.reshape((s.GRID_SIZE,s.GRID_SIZE)))
+      
+# engine =  MCTS()
+
+# print(engine.select_move(board, ships))

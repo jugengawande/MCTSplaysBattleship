@@ -5,7 +5,7 @@ class Settings:
     
 
     SQUARE = 50
-    GRID_SIZE = 7
+    GRID_SIZE = 5
 
     
     
