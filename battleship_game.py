@@ -4,15 +4,16 @@ import random
 from game_variables import Settings as s
 from game_physics import Game
 
+
 s.set_grid_size(size = 5)
-compete_mode = True
+compete_mode = False
 
 pygame.init()
 pygame.display.set_caption("BATTLESHIP")
 
 WINDOW = pygame.display.set_mode(s.GRID_DIM() if not compete_mode else s.COMPETE_GRID_DIM(), flags=pygame.SRCALPHA)
 
-HUMAN_1 = False
+HUMAN_1 = True
 HUMAN_0 = False
 
 # Automatically set Player 0 to be computer player if compete mode is on
@@ -64,22 +65,22 @@ def draw_grid(l=0,t=0, search_grid = False, player = None):
 
         
 def draw_ship(player, l=0, t=0):
-    
-    for ship in player.ships:
-        x = l + ship.col * s.SQUARE
-        y = t + ship.row * s.SQUARE
-        
-        ship_block = pygame.Rect(x+s.SQUARE//6,y+s.SQUARE//6, (s.SQUARE if ship.orientation == "V" else s.SQUARE * ship.size)-s.SQUARE//3, (s.SQUARE if ship.orientation == "H" else s.SQUARE * ship.size)-s.SQUARE//3)
-        pygame.draw.rect(WINDOW,s.YELLOW, ship_block, width = 1, border_radius=20)
-        
-        
 
+    
+    for c in player.ships_coords_2D:
+
+        x = l + c[1] * s.SQUARE
+        y = t + c[0] * s.SQUARE
+
+        # ship_block = pygame.Rect(x+s.SQUARE//6,y+s.SQUARE//6, (s.SQUARE if ship.orientation == "V" else s.SQUARE * ship.size)-s.SQUARE//3, (s.SQUARE if ship.orientation == "H" else s.SQUARE * ship.size)-s.SQUARE//3)
+        ship_block = pygame.Rect(x+s.SQUARE//6,y+s.SQUARE//6, s.SQUARE*2//3, s.SQUARE*2//3 )
+        pygame.draw.rect(WINDOW,s.YELLOW, ship_block, width = 1, border_radius=10)
+        
+            
+            
 WINDOW.fill((s.BLACK))
 
-
 game = Game(HUMAN_1, HUMAN_0)
-
-
 
 animation = True
 
@@ -97,7 +98,6 @@ while animation:
                 animation = False
                 break
                 
-
             if e.key == pygame.K_SPACE:
                 game = Game(HUMAN_1, HUMAN_0)
                 break
@@ -119,6 +119,7 @@ while animation:
                     # print(row,col)
                     index = row * s.GRID_SIZE + col
                     
+                    print(index)
                     game.move(index) 
                     # if r == 100 : WINDOW.fill(s.BLACK)   
                 

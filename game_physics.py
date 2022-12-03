@@ -16,16 +16,16 @@ class Ship:
             
             self.size = size
             
-            self.orientation = random.choice(["H", "V"])
+            self.orientation = random.choice(["H", "V", "DL", "DR"])
             
             self.index = self.calculate_ship_index()
-            
-        
+
     def calculate_ship_index(self):
         # Using an 1-D array to represent the grid world
         
         start_index = self.row * s.GRID_SIZE + self.col
         
+        # Out of grid checks
         if (start_index + self.size) >= s.WORLD_SIZE():
             # print("Invalid start position")
             return []
@@ -36,11 +36,27 @@ class Ship:
         if self.orientation == "V" and self.row + self.size >= s.GRID_SIZE:
             return []
         
+        if self.orientation == "DL" and (self.row + self.size - 1  >= s.GRID_SIZE or self.col - self.size + 1 < 0):
+            return []
+        
+        if self.orientation == "DR" and (self.row + self.size - 1  >= s.GRID_SIZE or self.col + self.size -1 >= s.GRID_SIZE):
+            return []
+        
+        
+        # Placing valid ships
         if self.orientation == "H":
             return [i for i in range(start_index, start_index+self.size)]
         
         elif self.orientation == "V":
             return [start_index + i * s.GRID_SIZE for i in range(self.size)]
+        
+        elif self.orientation == "DL":
+            return [start_index + i * s.GRID_SIZE - i for i in range(self.size)]
+        
+        
+        elif self.orientation == "DR":
+            return [start_index + i * s.GRID_SIZE + i for i in range(self.size)]
+        
         
               
 class Player:
@@ -55,7 +71,14 @@ class Player:
         
         self.ships_coords = [s.index for s in self.ships]
         self.ships_coords = sum(self.ships_coords, [])
+        # print(self.ships_coords)
 
+        
+        self.ships_coords_2D = np.unravel_index(self.ships_coords, (s.GRID_SIZE,s.GRID_SIZE))
+        self.ships_coords_2D = list(zip(self.ships_coords_2D[0], self.ships_coords_2D[1]))
+        # print(self.ships_coords_2D)
+        
+        
         self.world = np.asarray([0.1] * (s.WORLD_SIZE()))
         self.world[self.ships_coords] = [1] * len(self.ships_coords)
         # self.world = np.reshape(self.world,(s.GRID_SIZE,s.GRID_SIZE))
@@ -74,11 +97,21 @@ class Player:
                     if set(ship.index).intersection(fleet.index):
                         valid_position = False
                         break
+                    
+                    # Check if diagonal ships cross 
+                    if fleet.orientation in ["DR", "DL"] and ship.orientation in ["DR", "DL"]: 
+                        if max(fleet.index) > max(ship.index) and min(fleet.index) < min(ship.index): 
+                            valid_position = False
+                            break
+                    
                 else:
                     valid_position = True
-                
+            
+   
             self.ships.append(ship)                    
          
+         
+        
          
 class Game:
     def __init__(self, human_player_1, human_player_0) -> None:
@@ -197,7 +230,7 @@ class MCTS:
         ship_remaining = [k.size for k in SHIPS] # Fleet still standing
         
         
-        for i in range(1000):
+        for i in range(100):
             
             # Place remaining ships on board in probable places
             
@@ -268,3 +301,12 @@ class MCTS:
 # engine =  MCTS()
 
 # print(engine.select_move(board, ships))
+
+
+
+
+# s =Ship(3)
+
+# print(s.size)
+# print(s.orientation)
+# print(s.coords)

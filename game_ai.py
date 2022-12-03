@@ -16,7 +16,7 @@ class MCTS:
         # ship_remaining = ships # Fleet still standing
         self.ship_remaining = [len(k) for k in ships] # Fleet still standing
         
-        for i in range(10):
+        for i in range(100):
             # Place remaining ships on board in probable places
             for s in ship_remaining:
             
@@ -26,6 +26,7 @@ class MCTS:
                     ship = Ship(s)
                     
                     ship_coords = np.unravel_index( ship.index, (5,5))
+                    
                     for c in ship_coords:
                         if board[c[0],c[1]] in [0, 100]:
                                 valid_position = False
