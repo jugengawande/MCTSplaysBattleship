@@ -19,6 +19,10 @@ class Ship:
             self.orientation = random.choice(["H", "V", "DL", "DR"])
             
             self.index = self.calculate_ship_index()
+            
+            if self.index:
+                self.ship_coords_2D = np.unravel_index(self.index, (s.GRID_SIZE,s.GRID_SIZE))
+                self.ship_coords_2D = list(zip(self.ship_coords_2D[0], self.ship_coords_2D[1]))
 
     def calculate_ship_index(self):
         # Using an 1-D array to represent the grid world
@@ -74,8 +78,13 @@ class Player:
         # print(self.ships_coords)
 
         
-        self.ships_coords_2D = np.unravel_index(self.ships_coords, (s.GRID_SIZE,s.GRID_SIZE))
-        self.ships_coords_2D = list(zip(self.ships_coords_2D[0], self.ships_coords_2D[1]))
+        # self.ships_coords_2D = np.unravel_index(self.ships_coords, (s.GRID_SIZE,s.GRID_SIZE))
+        # self.ships_coords_2D = list(zip(self.ships_coords_2D[0], self.ships_coords_2D[1]))
+        
+        self.ships_coords_2D = [c.ship_coords_2D for c in self.ships]
+        self.ships_coords_2D = sum(self.ships_coords_2D, [])
+        
+        # self.ships_coords_2D = list(zip(self.ships_coords_2D[0], self.ships_coords_2D[1]))
         # print(self.ships_coords_2D)
         
         
@@ -168,7 +177,7 @@ class Game:
                             self.game_over_state = True
                             self.total_hits = len(attacker.hit_ships)
                             self.total_miss = np.count_nonzero(attacker.search == 0)
-                            self.winner = "Player 1" if self.turn else "Player 0"
+                            self.winner = "Player 1" if self.turn else "Player 2"
                             # print(attacker.name)
                                         
                         break
@@ -220,7 +229,7 @@ class MCTS:
         # Select a random ship size from remaining ships
         # ship_length = random.choice(ships) 
         
-        self.state = BOARD.copy().reshape((5,5))
+        self.state = BOARD.copy().reshape((s.GRID_SIZE,s.GRID_SIZE))
         
         self.state[self.state == 100] = 0 # Sunk ships are unaccessible regions
         self.state[self.state == 1] = 10
@@ -231,8 +240,8 @@ class MCTS:
         
         
         for i in range(100):
-            
             # Place remaining ships on board in probable places
+            # Currently creating 100 sample boards with a ship placed in all possible places
             
             # sim = np.array([0]*s.WORLD_SIZE()).reshape(5,5)
             sim = self.state.copy()
@@ -243,22 +252,22 @@ class MCTS:
             valid_position = False
             
             while not valid_position:
-                ship = Ship(size)
-                
-                ship_coords = np.unravel_index( ship.index, (5,5))
-
-                ship_coords_tuple = zip(ship_coords[0], ship_coords[1])
-                
-                for c in ship_coords_tuple:
+                ship = Ship(size)   
+                             
+                for c in ship.ship_coords_2D:
+                    
+                    # Ship should not be placed in discovered section except hit
+                    
                     if sim[c[0],c[1]] in [0, 5]:
-                            valid_position = False
-                            break
-                    else:
-                        valid_position = True
+                        valid_position = False
+                        break
+                    
+                else:
+                    valid_position = True
               
             if valid_position:                
-                for i in ship_coords:
-                    sim[ship_coords[0],ship_coords[1]] = 5 # Turns unknowns into knows
+                for c in ship.ship_coords_2D:
+                    sim[c[0],c[1]] = 5 # Places a ship in unknown 
             
             # size = random.choice(ship_remaining)
             # unexplored = [i for i, v in enumerate(board.flatten()) if v == 1]
