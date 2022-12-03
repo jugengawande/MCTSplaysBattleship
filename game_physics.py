@@ -82,7 +82,7 @@ class Player:
         # self.ships_coords_2D = list(zip(self.ships_coords_2D[0], self.ships_coords_2D[1]))
         
         self.ships_coords_2D = [c.ship_coords_2D for c in self.ships]
-        self.ships_coords_2D = sum(self.ships_coords_2D, [])
+        self.ships_coords_2D = list(sum(self.ships_coords_2D, []))
         
         # self.ships_coords_2D = list(zip(self.ships_coords_2D[0], self.ships_coords_2D[1]))
         # print(self.ships_coords_2D)
@@ -216,7 +216,6 @@ class Game:
         
         return engine.select_move(player.search, opponent.ships )
 
-        
 
          
 class MCTS:
@@ -229,12 +228,16 @@ class MCTS:
         # Select a random ship size from remaining ships
         # ship_length = random.choice(ships) 
         
-        self.state = BOARD.copy().reshape((s.GRID_SIZE,s.GRID_SIZE))
+        self.state = BOARD.copy().reshape((s.GRID_SIZE, s.GRID_SIZE))
         
         self.state[self.state == 100] = 0 # Sunk ships are unaccessible regions
-        self.state[self.state == 1] = 10
-        self.state[self.state == 0.1] = 1
+        self.state[self.state == 1] = 10 # Hit is undiscovered state
+        self.state[self.state == 0.1] = 1 # Undiscovered is 1
         
+        self.hit_coords = np.argwhere(self.state == 10)
+        self.hit_coords = [ c[0]*s.GRID_SIZE + c[1] for c in self.hit_coords ]
+        
+
         # ship_remaining = SHIPS # Fleet still standing
         ship_remaining = [k.size for k in SHIPS] # Fleet still standing
         
@@ -246,60 +249,93 @@ class MCTS:
             # sim = np.array([0]*s.WORLD_SIZE()).reshape(5,5)
             sim = self.state.copy()
             
-            # for s in ship_remaining:
             
-            size = random.choice(ship_remaining)
-            valid_position = False
-            
-            while not valid_position:
-                ship = Ship(size)   
-                             
-                for c in ship.ship_coords_2D:
-                    
-                    # Ship should not be placed in discovered section except hit
-                    
-                    if sim[c[0],c[1]] in [0, 5]:
-                        valid_position = False
-                        break
-                    
-                else:
-                    valid_position = True
-              
-            if valid_position:                
-                for c in ship.ship_coords_2D:
-                    sim[c[0],c[1]] = 5 # Places a ship in unknown 
-            
+            # --- PLOT ONE OF THE REMAINING ON BOARD
             # size = random.choice(ship_remaining)
-            # unexplored = [i for i, v in enumerate(board.flatten()) if v == 1]
+            # valid_position = False
             
-            # ship_placed = False
-            # while not ship_placed:
+            # while not valid_position:
+            #     ship = Ship(size)   
+                                
+            #     for c in ship.ship_coords_2D:
+                    
+            #         # Ship should not be placed in discovered section except hit
+                    
+            #         if sim[c[0],c[1]] in [0, 5]:
+            #             valid_position = False
+            #             break
+                    
+            #     else:
+            #         valid_position = True
                 
-            #     index = random.choice (unexplored) 
-            #     coord = np.unravel_index(index, (5,5) )
-            #     orientation = random.choice("H", "V")
+            # if valid_position:                
+            #     for c in ship.ship_coords_2D:
+            #         sim[c[0],c[1]] = 5 # Places a ship in unknown 
+            # 
+            # self.sim_board.append(sim)
+            
+            
+            # --- PLOT ALL REMAINING ON BOARD
+            targeted_ship = False
+            
+            for sh in ship_remaining:
+                valid_position = False
+                search_effort = 0 
                 
-            #     if orientation == "H":
-            #         if (range(index, index+size) in unexplored) and (coord[1]+size < s.GRID_SIZE) 
-            #             sim[range(coord[0],coord[0]+size), coord[1]*size] += 5
+                while not valid_position and search_effort < s.WORLD_SIZE():
+                    
+                    ship = Ship(sh)   
+                                
+                    for c in ship.ship_coords_2D:
+                        
+                        # Ship should not be placed in discovered section 
+                        
+                        if sim[c[0],c[1]] in [0, 5]:
+                            valid_position = False
+                            break
+                        
+                    else:
+                        valid_position = True
+                        
+                    search_effort += 1
+                    
+                if valid_position:  
+                    # print(ship.index)
                 
-            # print(sim)
-        
-            self.sim_board.append(sim)
+                    if set(ship.index).intersection(self.hit_coords): targeted_ship = True
+                   
+                              
+                    for c in ship.ship_coords_2D:
+                        sim[c[0],c[1]] = 5 # Places a ship in unknown 
+                
+                
+                
+                
+            # print(targeted_ship)
+            self.sim_board.extend([sim]*2 if targeted_ship else [sim])
                 
          
     def select_move(self, board, ships):
         
         self.simulate_board(board,ships)
-        # print(self.sim_board)
         b = sum(self.sim_board)
-        # print(b.flatten())
-        b = b - self.state * len(self.sim_board) 
+        # print(self.sim_board)
         
-        # sns.heatmap(b)
-        # plt.show()
-        # print(b.flatten())
+        b = b - self.state * len(self.sim_board) 
         return np.argmax(b) 
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # ships = [2,3,4]

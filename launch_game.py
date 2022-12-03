@@ -9,7 +9,7 @@ human_1_bool = True if input("Is Player 1 a human player? [T/F]: ") == 'T' else 
 human_0_bool = True if input("Is Player 2 a human player? [T/F]: ") == 'T' else False
 
 
-print(human_1_bool,human_0_bool) 
+# print(human_1_bool,human_0_bool) 
 compete = False
 
 

@@ -100,7 +100,7 @@ def run_game(human_1_bool, human_0_bool, view_opponent):
                     break
                     
                 if e.key == pygame.K_SPACE:
-                    game = Game(HUMAN_1, HUMAN_0)
+                    game = Game(human_1_bool, human_0_bool)
                     break
                 
                 if e.key == pygame.K_s:
@@ -157,7 +157,7 @@ def run_game(human_1_bool, human_0_bool, view_opponent):
             
             winner_text =  (game.winner) + " destroyed entire enemy fleet! HOOYAH"
             
-            font = pygame.font.SysFont("Calibri", 28)
+            font = pygame.font.SysFont("Calibri", 20)
             text = font.render(winner_text ,True,s.ORANGE, s.PURPLE)
             WINDOW.blit(text, ((WINDOW.get_size()[0] - 10*s.SQUARE)//2, WINDOW.get_size()[1] // 2+10))
             
