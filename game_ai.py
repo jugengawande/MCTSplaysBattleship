@@ -51,7 +51,7 @@ class MCTS:
         b = b - board 
         print(b)
         
-        return np.argmax(b)
+        return np.argmax(b[])
         
         
         

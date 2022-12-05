@@ -109,7 +109,8 @@ class Player:
                     
                     # Check if diagonal ships cross 
                     if fleet.orientation in ["DR", "DL"] and ship.orientation in ["DR", "DL"]: 
-                        if max(fleet.index) > max(ship.index) and min(fleet.index) < min(ship.index): 
+                        if (max(fleet.index) > max(ship.index) and min(fleet.index) < min(ship.index)) or \
+                            max(ship.index) > max(fleet.index) and min(ship.index) < min(fleet.index): 
                             valid_position = False
                             break
                     
@@ -318,11 +319,14 @@ class MCTS:
     def select_move(self, board, ships):
         
         self.simulate_board(board,ships)
+        
         b = sum(self.sim_board)
         # print(self.sim_board)
+        self.state[self.state==10] = 0
         
-        b = b - self.state * len(self.sim_board) 
-        return np.argmax(b) 
+        print(np.where(self.state, b , 0))
+        # b = b - self.state * len(self.sim_board) 
+        return np.argmax(np.where(self.state, b , 0)) 
 
 
 
