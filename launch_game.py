@@ -14,6 +14,6 @@ compete = False
 
 
 if (human_1_bool and not human_0_bool) or (human_0_bool and not human_1_bool):
-    compete = True if input("Do you want to play in compete mode? [T/F]: ") == 'T' else 'F'
+    compete = True if input("Do you want to play in compete mode? [T/F]: ") == 'T' else False
     
 battleship_game.run_game(human_1_bool, human_0_bool, compete)
