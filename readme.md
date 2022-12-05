@@ -22,4 +22,5 @@ The gamelplay looks like below
 
 
 
-made with 🧠
+
+<center> made with 🧠</center>
