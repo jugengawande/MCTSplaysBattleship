@@ -1,7 +1,7 @@
 ![plot](/Assets/battleship.png)
 # Computer plays Battleship
 
-Designed by: Jugen Gawande & Dimpy Ghaswala
+<b>Designed by: Jugen Gawande & Dimpy Ghaswala</b>
 
 Battleship is a turn based strategy game. The goal is to arrange your own fleet and destroy enemy fleet before your own fleet is sunk entirely. 
 This project develops a tree based ai algorithm that plays battleship against a human. The hope is to beat humans almost everytime. HAPPY FIGHTING.
