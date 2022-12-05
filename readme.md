@@ -7,9 +7,9 @@ Battleship is a turn based strategy game. The goal is to arrange your own fleet 
 This project develops a tree based ai algorithm that plays battleship against a human. The hope is to beat humans almost everytime. HAPPY FIGHTING.
 
 To play the game launch the GUI using the following command after cloning this project.
-'''
+```
 python launch_game.py
-'''
+```
 
 The terminal will ask for a grid size to play and settings to set if the player is human or computer.
 To play against the computer set Player 1 to <b>T</b> and Player 2 as <b>F</b>. 
