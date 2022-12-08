@@ -10,11 +10,13 @@ To play the game launch the GUI using the following command after cloning this p
 ```
 python launch_game.py
 ```
+To play the game follow the on screen instructions:
 
-The terminal will ask for a grid size to play and settings to set if the player is human or computer.
-To play against the computer set Player 1 to <b>T</b> and Player 2 as <b>F</b>. 
-
-To play a true game of battleship set the next prompt to <b>T</b>. In this you want be able to see the Player 2's grid.
+ - Enter the grid size to play with. Currently supported are (5,7,10,20).
+ - Type <b>T</b> to play as a human for Player 1, similarly set Player 2 as <b>T</b> to set player 2 as human.
+ - If either Player 1 or 2 is <b>F</b> then you are playing against the computer ai. If both players are set to <b>F</b> then teh AI plays AI (World domination 🧨)
+ - <b>COMPETE MODE: </b>When one player of the player is the computer ai then an option to play in compete mode is presented. If set to <b>T</b> then you can't see the opponents board.
+ The gameplay is like a true game. 
 
 The gamelplay looks like below
 
