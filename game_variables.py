@@ -3,27 +3,9 @@
 
 class Settings:
     
-
+    
     SQUARE = 50
     GRID_SIZE = 5
-
-    
-    
-    @staticmethod
-    def WORLD_SIZE():
-        return Settings.GRID_SIZE * Settings.GRID_SIZE
-
-    # Display Window
-    @staticmethod 
-    def GRID_DIM():
-        return (Settings.SQUARE * Settings.GRID_SIZE * 2 + 3 * Settings.SQUARE, Settings.SQUARE * Settings.GRID_SIZE * 2 + 3 * Settings.SQUARE)
-    
-    @staticmethod 
-    def COMPETE_GRID_DIM():
-        return (Settings.SQUARE * Settings.GRID_SIZE * 2 + 3 * Settings.SQUARE, Settings.SQUARE * Settings.GRID_SIZE + 2 * Settings.SQUARE)
-
-    
-
 
     #Theme Colors
     BLACK = (9, 11, 11)
@@ -44,7 +26,7 @@ class Settings:
 
     # Fleet 
 
-    ship_sizes = [2,3,3,4]
+    __ship_size = [2,3,3,4]
 
     search_colors = {
         0.1 : BLACK,
@@ -54,10 +36,33 @@ class Settings:
     }
     
 
-    def set_fleet(self, fleet_array ):
-        self.ship_sizes = fleet_array
+    @property
+    def Fleet(self) -> list:
+        return self.__ship_sizes
+        
+    @Fleet.setter
+    def Fleet(self, fleet_array ):
+        self.__ship_sizes = list(fleet_array)
     
-   
-    def set_grid_size(size):
+    @property
+    def GridSize(self):
+        return Settings.GRID_SIZE
+    
+    @GridSize.setter
+    def GridSize(self, size):
         if size > 0:
             Settings.GRID_SIZE = size
+    
+
+    @staticmethod
+    def WORLD_SIZE():
+        return Settings.GRID_SIZE * Settings.GRID_SIZE
+
+    # Display Window
+    @staticmethod
+    def GRID_DIM():
+        return (Settings.SQUARE * Settings.GRID_SIZE * 2 + 3 * Settings.SQUARE, Settings.SQUARE * Settings.GRID_SIZE * 2 + 3 * Settings.SQUARE)
+    
+    @staticmethod 
+    def COMPETE_GRID_DIM():
+        return (Settings.SQUARE * Settings.GRID_SIZE * 2 + 3 * Settings.SQUARE, Settings.SQUARE * Settings.GRID_SIZE + 2 * Settings.SQUARE)

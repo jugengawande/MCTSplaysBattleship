@@ -1,8 +1,12 @@
 # Battleship Gameplay
 import pygame
 import random
+import numpy as np
+
 from game_variables import Settings as s
 from game_physics import Game
+import test
+
 
 HUMAN_1 = True
 HUMAN_0 = False

@@ -219,117 +219,118 @@ class Game:
 
 
          
-class MCTS:
+# class MCTS:
     
-    def __init__(self) -> None:
-        self.state = None
-        self.sim_board = []
+#     def __init__(self) -> None:
+#         self.state = None
+#         self.sim_board = []
     
-    def simulate_board(self, BOARD, SHIPS):
-        # Select a random ship size from remaining ships
-        # ship_length = random.choice(ships) 
+#     def simulate_board(self, BOARD, SHIPS):
+#         # Select a random ship size from remaining ships
+#         # ship_length = random.choice(ships) 
         
-        self.state = BOARD.copy().reshape((s.GRID_SIZE, s.GRID_SIZE))
+#         self.state = BOARD.copy().reshape((s.GRID_SIZE, s.GRID_SIZE))
         
-        self.state[self.state == 100] = 0 # Sunk ships are unaccessible regions
-        self.state[self.state == 1] = 10 # Hit is undiscovered state
-        self.state[self.state == 0.1] = 1 # Undiscovered is 1
+#         self.state[self.state == 100] = 0 # Sunk ships are unaccessible regions
+#         self.state[self.state == 1] = 10 # Hit is undiscovered state
+#         self.state[self.state == 0.1] = 1 # Undiscovered is 1
         
-        self.hit_coords = np.argwhere(self.state == 10)
-        self.hit_coords = [ c[0]*s.GRID_SIZE + c[1] for c in self.hit_coords ]
+#         self.hit_coords = np.argwhere(self.state == 10)
+#         self.hit_coords = [ c[0]*s.GRID_SIZE + c[1] for c in self.hit_coords ]
         
 
-        # ship_remaining = SHIPS # Fleet still standing
-        ship_remaining = [k.size for k in SHIPS] # Fleet still standing
+#         # ship_remaining = SHIPS # Fleet still standing
+#         ship_remaining = [k.size for k in SHIPS] # Fleet still standing
         
         
-        for i in range(100):
-            # Place remaining ships on board in probable places
-            # Currently creating 100 sample boards with a ship placed in all possible places
+#         for i in range(100):
+#             # Place remaining ships on board in probable places
+#             # Currently creating 100 sample boards with a ship placed in all possible places
             
-            # sim = np.array([0]*s.WORLD_SIZE()).reshape(5,5)
-            sim = self.state.copy()
+#             # sim = np.array([0]*s.WORLD_SIZE()).reshape(5,5)
+#             sim = self.state.copy()
             
             
-            # --- PLOT ONE OF THE REMAINING ON BOARD
-            # size = random.choice(ship_remaining)
-            # valid_position = False
+#             # --- PLOT ONE OF THE REMAINING ON BOARD
+#             # size = random.choice(ship_remaining)
+#             # valid_position = False
             
-            # while not valid_position:
-            #     ship = Ship(size)   
+#             # while not valid_position:
+#             #     ship = Ship(size)   
                                 
-            #     for c in ship.ship_coords_2D:
+#             #     for c in ship.ship_coords_2D:
                     
-            #         # Ship should not be placed in discovered section except hit
+#             #         # Ship should not be placed in discovered section except hit
                     
-            #         if sim[c[0],c[1]] in [0, 5]:
-            #             valid_position = False
-            #             break
+#             #         if sim[c[0],c[1]] in [0, 5]:
+#             #             valid_position = False
+#             #             break
                     
-            #     else:
-            #         valid_position = True
+#             #     else:
+#             #         valid_position = True
                 
-            # if valid_position:                
-            #     for c in ship.ship_coords_2D:
-            #         sim[c[0],c[1]] = 5 # Places a ship in unknown 
-            # 
-            # self.sim_board.append(sim)
+#             # if valid_position:                
+#             #     for c in ship.ship_coords_2D:
+#             #         sim[c[0],c[1]] = 5 # Places a ship in unknown 
+#             # 
+#             # self.sim_board.append(sim)
             
             
-            # --- PLOT ALL REMAINING ON BOARD
-            targeted_ship = False
+#             # --- PLOT ALL REMAINING ON BOARD
+#             targeted_ship = False
             
-            for sh in ship_remaining:
-                valid_position = False
-                search_effort = 0 
+#             for sh in ship_remaining:
+#                 valid_position = False
+#                 search_effort = 0 
                 
-                while not valid_position and search_effort < s.WORLD_SIZE():
+#                 while not valid_position and search_effort < s.WORLD_SIZE():
                     
-                    ship = Ship(sh)   
+#                     ship = Ship(sh)   
                                 
-                    for c in ship.ship_coords_2D:
+#                     for c in ship.ship_coords_2D:
                         
-                        # Ship should not be placed in discovered section 
+#                         # Ship should not be placed in discovered section 
                         
-                        if sim[c[0],c[1]] in [0, 5]:
-                            valid_position = False
-                            break
+#                         if sim[c[0],c[1]] in [0, 5]:
+#                             valid_position = False
+#                             break
                         
-                    else:
-                        valid_position = True
+#                     else:
+#                         valid_position = True
                         
-                    search_effort += 1
+#                     search_effort += 1
                     
-                if valid_position:  
-                    # print(ship.index)
+#                 if valid_position:  
+#                     # print(ship.index)
                 
-                    if set(ship.index).intersection(self.hit_coords): targeted_ship = True
+#                     if set(ship.index).intersection(self.hit_coords): targeted_ship = True
                    
                               
-                    for c in ship.ship_coords_2D:
-                        sim[c[0],c[1]] = 5 # Places a ship in unknown 
+#                     for c in ship.ship_coords_2D:
+#                         sim[c[0],c[1]] = 5 # Places a ship in unknown 
                 
                 
                 
                 
-            # print(targeted_ship)
-            self.sim_board.extend([sim]*2 if targeted_ship else [sim])
+#             # print(targeted_ship)
+#             self.sim_board.extend([sim]*2 if targeted_ship else [sim])
                 
          
-    def select_move(self, board, ships):
+#     def select_move(self, board, ships):
         
-        self.simulate_board(board,ships)
+#         self.simulate_board(board,ships)
         
-        b = sum(self.sim_board)
-        # print(self.sim_board)
-        self.state[self.state==10] = 0
+#         b = sum(self.sim_board)
+#         # print(self.sim_board)
+#         self.state[self.state==10] = 0
         
-        print(np.where(self.state, b , 0))
-        # b = b - self.state * len(self.sim_board) 
-        return np.argmax(np.where(self.state, b , 0)) 
+#         print(np.where(self.state, b , 0))
+#         # b = b - self.state * len(self.sim_board) 
+#         return np.argmax(np.where(self.state, b , 0)) 
 
 
-
+class MCTS:
+    
 
 
 
