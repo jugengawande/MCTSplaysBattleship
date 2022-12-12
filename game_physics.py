@@ -2,6 +2,7 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt 
 import seaborn as sns
+from copy import deepcopy
 from game_variables import Settings as s
 
 class Ship:
@@ -248,7 +249,7 @@ class MCTS:
             # Currently creating 100 sample boards with a ship placed in all possible places
             
             # sim = np.array([0]*s.WORLD_SIZE()).reshape(5,5)
-            sim = self.state.copy()
+            sim = deepcopy(self.state)
             
             
             # --- PLOT ONE OF THE REMAINING ON BOARD
@@ -313,7 +314,7 @@ class MCTS:
                 
                 
             # print(targeted_ship)
-            self.sim_board.extend([sim]*2 if targeted_ship else [sim])
+            self.sim_board.extend([sim]*5 if targeted_ship else [sim])
                 
          
     def select_move(self, board, ships):
