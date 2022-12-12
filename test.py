@@ -228,9 +228,10 @@ class Player:
         return list(zip(y[0],y[1]))
     
     def score(self):
+        
         miss = np.count_nonzero(np.array(self.SearchGrid.getBoard()) == 0)
         spare = s.WORLD_SIZE() - sum(self.fleet) 
-        
+ 
         return 1 - (miss/spare)
 
 class Strategy:
@@ -254,27 +255,38 @@ class Game:
         
         while not self.player_1.isDefeated() and not self.player_2.isDefeated():
             
+            
 
             if self.turn:
-                target = Strategy.randomPlayer(self.player_1.possibleMoves())
-                # print("Player 1 targeted: ", target)
-                Actions.shootTarget(self.player_1, self.player_2, target)
+                target = Strategy.sequentialPlayer(self.player_1.possibleMoves())
+                res = Actions.shootTarget(self.player_1, self.player_2, target)
+                # print("Player 1 targeted: ", target, "H" if res else "M")
+                
                 self.turn = not self.turn
             else:
-                target = Strategy.sequentialPlayer(self.player_2.possibleMoves())
-                # print("Player 2 targeted: ", target)
-                Actions.shootTarget(self.player_2, self.player_1, target)
+                
+                # self.player_1.ShipGrid.printBoard()
+                # print()
+                # self.player_2.SearchGrid.printBoard()
+                # # target = Strategy.sequentialPlayer(self.player_2.possibleMoves())
+                target = MCTS(self.player_2,self.player_1, 25).MCTSPlayer()
+                
+                res = Actions.shootTarget(self.player_2, self.player_1, target)
+                # print("Player 2 targeted: ", target, "H" if res else "M")
                 self.turn = not self.turn
+
 
             
     
     
     def runSimulationMode(self):
+        
+        # Testing algoirthm of how quick it can explore
         while not self.player_2.isDefeated():
-            target = Strategy.sequentialPlayer(self.player_1.possibleMoves())
+            target = MCTS(self.player_1,self.player_2, 10).MCTSPlayer()
             
-            # print("Player 1 targeted: ", target)
-            Actions.shootTarget(self.player_1, self.player_2, target)
+            res = Actions.shootTarget(self.player_1, self.player_2, target)
+            # print("Player 1 targeted: ", target, "H" if res else "M")
 
       
     def isWinner(self):
@@ -289,54 +301,174 @@ class Actions:
     @staticmethod
     def shootTarget( attacker, enemy, a):
         row, col = a
+        
         sh = enemy.ShipGrid.isShip(row,col)
+        
         if sh:
             attacker.SearchGrid.markHit(row,col)
             enemy.ShipGrid.markHit(row,col)
             sh.shipHit()
             
             if enemy.isDefeated() : attacker.winner = True
+            return True
 
         else:
             attacker.SearchGrid.markMiss(row,col)
+            
         
 
 
 class Node:
     def __init__(self,parent,attacker, enemy) -> None:
-        self.parent = parent.deepcopy()
-        self.attacker = attacker.deepcopy()
-        self.enemy = enemy.deepcopy()
-         
+        self.parent = parent
+        self.attacker = deepcopy(attacker)
+        self.enemy = deepcopy(enemy)
+        
         self.children = list()
+        
+        self.plays = 0
+        self.wins = 0
+        
+    def pickChildToSimulate(self):
+        return random.choice(self.children)
+            
+    def addChild(self, node):
+        self.children.append(node)
+    
+    def makeMove(self, move):
+        self.target = move
+        Actions.shootTarget(self.attacker, self.enemy, self.target)
+        
+    def getChildren(self):
+        return self.children
+    
+    def incrementPlay(self):
+        self.plays += 1
 
-
-    def addChildren(self):
-        child = Node(self, )
-
+    def incrementWins(self):
+        self.wins += 1
+        
+    def winPercentage(self):
+        if self.plays > 0:
+            return float(self.wins / self.plays)
+        else:
+            return 0
 
 class MCTS:
-    def __init__(self, attacker, opponent, maxDepth) -> None:
+    
+    def __init__(self, attacker, opponent, maxDepth) :
         self.root = Node(None,attacker, opponent)
         self.maxDepth = maxDepth
+           
+
+    def UCT(self, parent_plays, curr_wins, curr_plays):
+        if curr_plays == 0:
+            return float("inf")
+
+        return curr_wins / curr_plays + np.sqrt(2 * np.log(np.exp(parent_plays)) / curr_plays)
+    
+    
+    def select(self, node):
+        if not node.getChildren(): # No children of root
+            return node
+        
+        bestNode = node
+        bestUCT = 0
+        
+        for n in node.getChildren():
+            uct = self.UCT(n.parent.plays, n.wins, n.plays)
+        
+            if uct == float("inf"): return n
+            
+            if bestNode == node or uct > bestUCT:
+                bestNode = n
+                bestUCT = uct
+                
+            return self.select(bestNode)
+        
+    def expand(self, parentNode):
+        
+        moves = parentNode.attacker.possibleMoves()
+        
+        # print("Expanding node")
+        for m in moves:
+            # print("Child: move ", m)
+            child = Node(parentNode, parentNode.enemy, parentNode.attacker)
+            child.makeMove(m)
+            parentNode.addChild(child)
+                
+
+    def rollout(self, node = None, att = None, en = None):
         
         
-    def MCTSPlayer(self):
+        if node != None:
+            attacker = deepcopy(node.attacker)
+            enemy = deepcopy(node.enemy)
+        else:
+            attacker = deepcopy(att)
+            enemy = deepcopy(en)
+            
+            
+        possibleMove = attacker.possibleMoves()
+        move = random.choice(possibleMove)
+        
+        Actions.shootTarget(attacker, enemy, move )
+        
+        if enemy.isDefeated():
+            # print("End Simulation")
+            return True
+        
+        return not self.rollout(att = enemy,  en = attacker)
+        
+
+    def backpropogate(self, node, wins):
+        if wins:
+            node.incrementWins()
+        node.incrementPlay()
+        
+        
+        if node.parent != None:
+            self.backpropogate(node.parent, not wins)
+        
+
+     
+   
+    def run(self):
         iteration = 0
+
+        # print("\nMCTS Start")  
+        
         while ( iteration < self.maxDepth):
-            currNode = self.select()
-
-
-    def select(self):
+            # print(iteration) 
+            
+            currNode = self.select(self.root)
+            self.expand(currNode) 
+            simulateNode = currNode.pickChildToSimulate()
+            # print("Selected child: ", simulateNode.target)
+            
+            if simulateNode == None or not simulateNode.attacker.possibleMoves():
+                break
+            
+            # print("Started Simulation")    
+            win = self.rollout(node = simulateNode)
+            self.backpropogate(simulateNode, win)
+            iteration += 1
         
-    def expand(self):
+            
+        return self.root.getChildren() 
+            
+    def MCTSPlayer(self):
+        m = self.run()
+        # print(m)
+        promisingNode = m[0]
         
-    def rollout(self):
-        
-    def backpropogate(self):
-        
-
-
+        for node in m:
+            # print(round(node.winPercentage(),2), node.target, end="\t")
+            if node.winPercentage() > promisingNode.winPercentage():
+                promisingNode = node
+ 
+        # print(promisingNode.target )
+        return promisingNode.target
 
 
 
@@ -361,26 +493,42 @@ class MCTS:
 
 # h.SearchGrid.printBoard()
 
-s.Fleet = [2,2,4]
+s.Fleet = [2,2,3,4]
+s.GRID_SIZE = 5 
+#-------------------------
 
 player_1_wins = 0
-sample = 1000 
+sample = 10
 for i in range(sample):
+    print("Playing game:", i+1, end="\t\t")
     g = Game()
     g.run()
     
     player_1_wins += 1 if g.isWinner() == g.player_1 else 0
+    print("Won by", g.isWinner().name, " Score:", round(g.isWinner().score(),5), "\n")
+    g.isWinner().SearchGrid.printBoard()
     
+
 player_2_wins = sample - player_1_wins
 
-print("Player 1 Won: ", player_1_wins)
-print("Player 2 Won: ", player_2_wins)
+print("Player 1 Wins: ", player_1_wins)
+print("Player 2 Wins: ", player_2_wins)
     
-    
-    
-# g.runSimulationMode()
-# print(g.isWinner().name)
-# print(g.player_1.score())
 
-# print()
-# g.player_2.SearchGrid.printBoard()
+# # -------------------------
+
+# algorithm_score = []
+
+# sample = 10
+# for i in range(sample):
+#     print("Experiment ", i)
+#     g = Game()
+#     # g.player_2.ShipGrid.printBoard()
+#     g.runSimulationMode()
+#     algorithm_score.append(g.player_1.score())
+#     print("Score :", g.player_1.score())
+#     g.player_1.SearchGrid.printBoard()
+#     print()
+    
+# print("Best score: ", max(algorithm_score))
+# print("Average Score: ", np.mean(algorithm_score))
