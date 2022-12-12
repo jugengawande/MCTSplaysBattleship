@@ -51,7 +51,6 @@ class Ship:
         return self.isSunk
 
 
-    
 class Board:
     
     UNKNOWN = -1
@@ -110,15 +109,12 @@ class Board:
         print(self.board)  
 
 
-
 class SearchBoard (Board):    
       
     def markSink(self, ship):
         for c in ship.shipCoordinates():
             row, col = c
             self.board[row][col] == Board.SUNK
-        
-
         
     
 class ShipBoard (Board):
@@ -234,6 +230,7 @@ class Player:
  
         return 1 - (miss/spare)
 
+
 class Strategy:
     @staticmethod
     def randomPlayer( moves ):
@@ -258,8 +255,9 @@ class Game:
             
 
             if self.turn:
-                target = Strategy.sequentialPlayer(self.player_1.possibleMoves())
+                target = Strategy.randomPlayer(self.player_1.possibleMoves())
                 res = Actions.shootTarget(self.player_1, self.player_2, target)
+                
                 # print("Player 1 targeted: ", target, "H" if res else "M")
                 
                 self.turn = not self.turn
@@ -269,21 +267,21 @@ class Game:
                 # print()
                 # self.player_2.SearchGrid.printBoard()
                 # # target = Strategy.sequentialPlayer(self.player_2.possibleMoves())
-                target = MCTS(self.player_2,self.player_1, 25).MCTSPlayer()
                 
+                target = MCTS(self.player_2,self.player_1, 100).MCTSPlayer()
                 res = Actions.shootTarget(self.player_2, self.player_1, target)
-                # print("Player 2 targeted: ", target, "H" if res else "M")
+                
+                # print("Player 2 targeted: ", target, "H" if res else "M")    
+                # if res: self.player_2.SearchGrid.printBoard()
+                
                 self.turn = not self.turn
 
 
-            
-    
-    
     def runSimulationMode(self):
         
         # Testing algoirthm of how quick it can explore
         while not self.player_2.isDefeated():
-            target = MCTS(self.player_1,self.player_2, 10).MCTSPlayer()
+            target = MCTS(self.player_1,self.player_2, 60).MCTSPlayer()
             
             res = Actions.shootTarget(self.player_1, self.player_2, target)
             # print("Player 1 targeted: ", target, "H" if res else "M")
@@ -365,7 +363,7 @@ class MCTS:
         if curr_plays == 0:
             return float("inf")
 
-        return curr_wins / curr_plays + np.sqrt(2 * np.log(np.exp(parent_plays)) / curr_plays)
+        return (curr_wins / curr_plays) + (np.sqrt(2 * np.log(np.exp(parent_plays)) / curr_plays))
     
     
     def select(self, node):
@@ -405,8 +403,8 @@ class MCTS:
             attacker = deepcopy(node.attacker)
             enemy = deepcopy(node.enemy)
         else:
-            attacker = deepcopy(att)
-            enemy = deepcopy(en)
+            attacker = att
+            enemy = en
             
             
         possibleMove = attacker.possibleMoves()
@@ -493,7 +491,7 @@ class MCTS:
 
 # h.SearchGrid.printBoard()
 
-s.Fleet = [2,2,3,4]
+s.Fleet = [2,3,4]
 s.GRID_SIZE = 5 
 #-------------------------
 
@@ -506,7 +504,7 @@ for i in range(sample):
     
     player_1_wins += 1 if g.isWinner() == g.player_1 else 0
     print("Won by", g.isWinner().name, " Score:", round(g.isWinner().score(),5), "\n")
-    g.isWinner().SearchGrid.printBoard()
+    # g.isWinner().SearchGrid.printBoard()
     
 
 player_2_wins = sample - player_1_wins
@@ -515,7 +513,7 @@ print("Player 1 Wins: ", player_1_wins)
 print("Player 2 Wins: ", player_2_wins)
     
 
-# # -------------------------
+##-------------------------
 
 # algorithm_score = []
 
