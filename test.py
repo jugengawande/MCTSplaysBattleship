@@ -382,7 +382,7 @@ class MCTS:
                 bestNode = n
                 bestUCT = uct
                 
-            return self.select(bestNode)
+        return self.select(bestNode)
         
     def expand(self, parentNode):
         
@@ -461,10 +461,12 @@ class MCTS:
         promisingNode = m[0]
         
         for node in m:
+            print(round(node.winPercentage(),2), end="\t")
             # print(round(node.winPercentage(),2), node.target, end="\t")
             if node.winPercentage() > promisingNode.winPercentage():
                 promisingNode = node
- 
+
+        print(promisingNode.target)
         # print(promisingNode.target )
         return promisingNode.target
 
@@ -493,40 +495,43 @@ class MCTS:
 
 s.Fleet = [2,3,4]
 s.GRID_SIZE = 5 
-#-------------------------
 
-player_1_wins = 0
-sample = 10
-for i in range(sample):
-    print("Playing game:", i+1, end="\t\t")
-    g = Game()
-    g.run()
-    
-    player_1_wins += 1 if g.isWinner() == g.player_1 else 0
-    print("Won by", g.isWinner().name, " Score:", round(g.isWinner().score(),5), "\n")
-    # g.isWinner().SearchGrid.printBoard()
-    
 
-player_2_wins = sample - player_1_wins
 
-print("Player 1 Wins: ", player_1_wins)
-print("Player 2 Wins: ", player_2_wins)
-    
+# #-------------------------
 
-##-------------------------
-
-# algorithm_score = []
-
+# player_1_wins = 0
 # sample = 10
 # for i in range(sample):
-#     print("Experiment ", i)
+#     print("Playing game:", i+1, end="\t\t")
 #     g = Game()
-#     # g.player_2.ShipGrid.printBoard()
-#     g.runSimulationMode()
-#     algorithm_score.append(g.player_1.score())
-#     print("Score :", g.player_1.score())
-#     g.player_1.SearchGrid.printBoard()
-#     print()
+#     g.run()
     
-# print("Best score: ", max(algorithm_score))
-# print("Average Score: ", np.mean(algorithm_score))
+#     player_1_wins += 1 if g.isWinner() == g.player_1 else 0
+#     print("Won by", g.isWinner().name, " Score:", round(g.isWinner().score(),5), "\n")
+#     # g.isWinner().SearchGrid.printBoard()
+    
+
+# player_2_wins = sample - player_1_wins
+
+# print("Player 1 Wins: ", player_1_wins)
+# print("Player 2 Wins: ", player_2_wins)
+    
+
+#-------------------------
+
+algorithm_score = []
+
+sample = 1
+for i in range(sample):
+    print("Experiment ", i)
+    g = Game()
+    # g.player_2.ShipGrid.printBoard()
+    g.runSimulationMode()
+    algorithm_score.append(g.player_1.score())
+    print("Score :", g.player_1.score())
+    g.player_1.SearchGrid.printBoard()
+    print()
+    
+print("Best score: ", max(algorithm_score))
+print("Average Score: ", np.mean(algorithm_score))
