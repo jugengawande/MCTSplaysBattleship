@@ -233,11 +233,14 @@ class MCTS:
         self.state = BOARD.copy().reshape((s.GRID_SIZE, s.GRID_SIZE))
         
         self.state[self.state == 100] = 0 # Sunk ships are unaccessible regions
-        self.state[self.state == 1] = 10 # Hit is undiscovered state
-        self.state[self.state == 0.1] = 1 # Undiscovered is 1
         
+        self.state[self.state == 1] = 10 # Hit is undiscovered state
         self.hit_coords = np.argwhere(self.state == 10)
         self.hit_coords = [ c[0]*s.GRID_SIZE + c[1] for c in self.hit_coords ]
+        
+        self.state[self.state == 10] = 1 # Hit is undiscovered state
+        self.state[self.state == 0.1] = 1 # Undiscovered is 1
+        
         
 
         # ship_remaining = SHIPS # Fleet still standing
@@ -284,7 +287,7 @@ class MCTS:
                 valid_position = False
                 search_effort = 0 
                 
-                while not valid_position and search_effort < s.WORLD_SIZE():
+                while not valid_position and search_effort < 100:
                     
                     ship = Ship(sh)   
                                 
@@ -292,7 +295,7 @@ class MCTS:
                         
                         # Ship should not be placed in discovered section 
                         
-                        if sim[c[0],c[1]] in [0, 5]:
+                        if sim[c[0],c[1]] in [0, 5]: # If location is discovered or a sim ship is placed
                             valid_position = False
                             break
                         
@@ -309,11 +312,14 @@ class MCTS:
                               
                     for c in ship.ship_coords_2D:
                         sim[c[0],c[1]] = 5 # Places a ship in unknown 
-                
-                
+
+                    for c in self.hit_coords:
+                        x = np.unravel_index(c, (s.GRID_SIZE,s.GRID_SIZE))
+                        sim[x[0],x[1]] = 0 # Reset hit target to remove influence
                 
                 
             # print(targeted_ship)
+            # print(sim, sep='\n')
             self.sim_board.extend([sim]*5 if targeted_ship else [sim])
                 
          
@@ -325,7 +331,7 @@ class MCTS:
         # print(self.sim_board)
         self.state[self.state==10] = 0
         
-        print(np.where(self.state, b , 0))
+        # print(np.where(self.state, b , 0))
         # b = b - self.state * len(self.sim_board) 
         return np.argmax(np.where(self.state, b , 0)) 
 
@@ -344,13 +350,19 @@ class MCTS:
 
 
 # ships = [2,3,4]
+# fleet = []
+# for sh in ships:
+#     fleet.append(Ship(sh))
+    
 # board = np.asarray([0.1, 1.,  0.1, 0.,  0.1, 0.1, 0.1, 0.1, 0.1, 0.,  0.1, 0.,  0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.,  0.,  0.1, 0.1, 0.1, 0.1, 0 ])
 # print("Initial Board")
 # print(board.reshape((s.GRID_SIZE,s.GRID_SIZE)))
-      
+
+
+
 # engine =  MCTS()
 
-# print(engine.select_move(board, ships))
+# print(engine.select_move(board, fleet))
 
 
 
