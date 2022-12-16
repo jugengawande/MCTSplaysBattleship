@@ -329,7 +329,7 @@ class Game:
 #         return np.argmax(np.where(self.state, b , 0)) 
 
 
-class MCTS:
+
     
 
 

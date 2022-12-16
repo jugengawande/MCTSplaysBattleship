@@ -4,6 +4,8 @@ import numpy as np
 import random 
 from copy import deepcopy
 
+from stable_baselines3 import PPO
+
 class Ship:
     
     HORIZONTAL = 0
@@ -239,14 +241,21 @@ class Strategy:
     @staticmethod
     def sequentialPlayer(moves):
         return moves[0]
+    
+    
 
 
 class Game:
-    def __init__(self) -> None:
+    def __init__(self, grid_size, fleet) -> None:
+        s.GRID_SIZE = grid_size
+        s.Fleet = fleet
+        
         self.player_1 = Player("Human", s.Fleet)
         self.player_2 = Player("Computer", s.Fleet)
 
         self.turn = True
+        
+        self.model = PPO.load ("models/1671227467/820000")
         
     def run(self):
         
@@ -255,7 +264,9 @@ class Game:
             
 
             if self.turn:
-                target = Strategy.randomPlayer(self.player_1.possibleMoves())
+                target = Strategy.sequentialPlayer(self.player_1.possibleMoves())
+                # target = MCTS(self.player_1,self.player_2, 100).MCTSPlayer()
+                
                 res = Actions.shootTarget(self.player_1, self.player_2, target)
                 
                 # print("Player 1 targeted: ", target, "H" if res else "M")
@@ -266,9 +277,11 @@ class Game:
                 # self.player_1.ShipGrid.printBoard()
                 # print()
                 # self.player_2.SearchGrid.printBoard()
-                # # target = Strategy.sequentialPlayer(self.player_2.possibleMoves())
                 
-                target = MCTS(self.player_2,self.player_1, 100).MCTSPlayer()
+                # # target = Strategy.sequentialPlayer(self.player_2.possibleMoves())
+                # target = MCTS(self.player_2,self.player_1, 100).MCTSPlayer()
+                target = np.unravel_index(self.model.predict(self.player_2.SearchGrid.getBoard())[0], (s.GRID_SIZE, s.GRID_SIZE))
+                
                 res = Actions.shootTarget(self.player_2, self.player_1, target)
                 
                 # print("Player 2 targeted: ", target, "H" if res else "M")    
@@ -281,7 +294,9 @@ class Game:
         
         # Testing algoirthm of how quick it can explore
         while not self.player_2.isDefeated():
-            target = MCTS(self.player_1,self.player_2, 60).MCTSPlayer()
+            # target = MCTS(self.player_1,self.player_2, 60).MCTSPlayer()
+            
+            target = np.unravel_index(self.model.predict(self.player_1.SearchGrid.getBoard())[0], (s.GRID_SIZE, s.GRID_SIZE))
             
             res = Actions.shootTarget(self.player_1, self.player_2, target)
             # print("Player 1 targeted: ", target, "H" if res else "M")
@@ -312,7 +327,7 @@ class Actions:
 
         else:
             attacker.SearchGrid.markMiss(row,col)
-            
+            return False
         
 
 
@@ -461,12 +476,11 @@ class MCTS:
         promisingNode = m[0]
         
         for node in m:
-            print(round(node.winPercentage(),2), end="\t")
-            # print(round(node.winPercentage(),2), node.target, end="\t")
+            # print(round(node.winPercentage(),2), end="\t")
+
             if node.winPercentage() > promisingNode.winPercentage():
                 promisingNode = node
-
-        print(promisingNode.target)
+                
         # print(promisingNode.target )
         return promisingNode.target
 
@@ -493,45 +507,45 @@ class MCTS:
 
 # h.SearchGrid.printBoard()
 
-s.Fleet = [2,3,4]
-s.GRID_SIZE = 5 
+# s.Fleet = [2,3,4]
+# s.GRID_SIZE = 5 
 
 
-
-# #-------------------------
-
-# player_1_wins = 0
-# sample = 10
-# for i in range(sample):
-#     print("Playing game:", i+1, end="\t\t")
-#     g = Game()
-#     g.run()
-    
-#     player_1_wins += 1 if g.isWinner() == g.player_1 else 0
-#     print("Won by", g.isWinner().name, " Score:", round(g.isWinner().score(),5), "\n")
-#     # g.isWinner().SearchGrid.printBoard()
-    
-
-# player_2_wins = sample - player_1_wins
-
-# print("Player 1 Wins: ", player_1_wins)
-# print("Player 2 Wins: ", player_2_wins)
-    
 
 #-------------------------
 
-algorithm_score = []
-
-sample = 1
+player_1_wins = 0
+sample = 1000
 for i in range(sample):
-    print("Experiment ", i)
-    g = Game()
-    # g.player_2.ShipGrid.printBoard()
-    g.runSimulationMode()
-    algorithm_score.append(g.player_1.score())
-    print("Score :", g.player_1.score())
-    g.player_1.SearchGrid.printBoard()
-    print()
+    # print("Playing game:", i+1, end="\t\t")
+    g = Game(5, [2,3,4])
+    g.run()
     
-print("Best score: ", max(algorithm_score))
-print("Average Score: ", np.mean(algorithm_score))
+    player_1_wins += 1 if g.isWinner() == g.player_1 else 0
+    
+    # print("Won by", g.isWinner().name, " Score:", round(g.isWinner().score(),5))
+    # g.isWinner().SearchGrid.printBoard()
+    
+
+player_2_wins = sample - player_1_wins
+
+print("Player 1 Wins: ", player_1_wins)
+print("Player 2 Wins: ", player_2_wins)
+    
+
+# #-------------------------
+
+# algorithm_score = []
+
+# sample = 100
+# for i in range(sample):
+
+#     g = Game(5, [2,3,4])
+#     # g.player_2.ShipGrid.printBoard()
+#     g.runSimulationMode()
+#     algorithm_score.append(g.player_1.score())
+#     print(f"Experiment: {i} Score :  {g.player_1.score()}")
+#     # g.player_1.SearchGrid.printBoard()
+    
+# print("Best score: ", max(algorithm_score))
+# print("Average Score: ", np.mean(algorithm_score))
