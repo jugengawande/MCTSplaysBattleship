@@ -26,10 +26,16 @@ class Settings:
 
     # Fleet 
 
-    __ship_size = [2,3,3,4]
+    ship_sizes = {
+    5: [2,3,4],
+    7: [2,3,4],
+    10: [2,3,4,5],
+    12: [2,3,4,4,5],
+    15: [2,3,3,4,4,5]
+}
 
     search_colors = {
-        0.1 : BLACK,
+        -1 : BLACK,
         1 : YELLOW,
         0 : NAVY ,
         100: ORANGE,
@@ -38,11 +44,11 @@ class Settings:
 
     @property
     def Fleet(self) -> list:
-        return self.__ship_sizes
+        return self.ship_sizes
         
-    @Fleet.setter
-    def Fleet(self, fleet_array ):
-        self.__ship_sizes = list(fleet_array)
+    # @Fleet.setter
+    # def Fleet(self, fleet_array ):
+    #     self.ship_sizes = list(fleet_array)
     
     @property
     def GridSize(self):
