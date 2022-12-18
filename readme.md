@@ -27,8 +27,9 @@ To play the game follow the on screen instructions:
  - <b>COMPETE MODE: </b>When one player of the player is the computer ai then an option to play in compete mode is presented. If set to <b>T</b> then you can't see the opponents board. Then the game play is like a true game. 
 
 Use the following keys while in game to control the game:
-<b>ESC</b> : Exit the game
-<b>SPACE</b> : Reset the game (Randomizes a new map)
+
+- <b>ESC</b> : Exit the game
+- <b>SPACE</b> : Reset the game (Randomizes a new map)
 
 The gamelplay looks like below
 
