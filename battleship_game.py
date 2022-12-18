@@ -141,8 +141,8 @@ def run_game(human_1_bool, human_0_bool, view_opponent, strategy_1=None, strateg
                         game = engine.Game(s.GRID_SIZE )                
                     break
                 
-                if e.key == pygame.K_s:
-                    print(game.player_1.search)
+                # if e.key == pygame.K_s:
+                #     print(game.player_1.search)
                     
             
         if not game.player_1.winner and not game.player_2.winner:
