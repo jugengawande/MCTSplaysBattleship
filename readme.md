@@ -34,8 +34,8 @@ The gamelplay looks like below
 
 ![plot](/Assets/gameplay_1.png)
 
-The analysis of the algorithm can be found in the the following file
-[a relative link] (gameplay_analysis.ipynb)
+The analysis of the algorithm can be found in the the gameplay_analysis.ipynb
+
 
 
 
