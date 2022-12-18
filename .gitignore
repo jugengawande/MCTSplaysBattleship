@@ -7,3 +7,7 @@ gameplay_analysis.ipynb
 __pycache__
 
 models
+logs
+plots
+
+!models/final/

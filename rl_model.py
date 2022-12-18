@@ -12,10 +12,17 @@ from test import Game, Actions
 import random
 
 class BattleShip(gym.Env):
-    def __init__(self) -> None:
+    def __init__(self, test) -> None:
         super().__init__()
-        
-        self.state =  Game(5, [2,3,4])
+        self.test_set ={
+            5: [5,[2,3,4]],
+            7: [7,[2,3,4]],
+            10: [10,[2,3,4]],
+            12: [12,[2,3,4]],
+            15: [15,[2,3,4]],
+        }
+        self.test = test
+        self.state =  Game(self.test_set[test][0],self.test_set[test][1] )
         self.att = self.state.player_1
         self.en = self.state.player_2
         
@@ -76,7 +83,7 @@ class BattleShip(gym.Env):
         self.win = False
         self.prev_reward = 0
         
-        self.state =  Game(5, [2,3,4])
+        self.state =  Game(self.test_set[self.test][0],self.test_set[self.test][1] )
         self.att = self.state.player_1
         self.en = self.state.player_2
         
@@ -116,23 +123,22 @@ class BattleShip(gym.Env):
 
 
 
-
 # env = BattleShip()
 
-# modeldir = f"models/{int (time.time ( ))}"
-# logdir = f"logs/{int (time. time () )}"
+# # modeldir = f"models/5/{int (time.time ( ))}"
+# # logdir = f"logs/5/{int (time. time () )}"
 
 # if not os.path.exists (modeldir):
 #     os.makedirs (modeldir)
 # if not os.path.exists (logdir):
 #     os.makedirs (logdir)
 
-# model = PPO("MlpPolicy", env, verbose=1)
+# model = PPO("MlpPolicy", env, verbose=1, tensorboard_log=logdir)
 
-# TIMESTEPS = 1000
+# TIMESTEPS = 100000
 
-# for i in range (1, 100) : 
-#     model.learn (total_timesteps=TIMESTEPS, reset_num_timesteps=False) #, tb_log_name= "PPO")
+# for i in range (1, 1000) : 
+#     model.learn (total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name="PPO") #, tb_log_name= "PPO")
 #     model.save (f'{modeldir}/{TIMESTEPS*i}')
     
 # env. close ()
@@ -140,8 +146,8 @@ class BattleShip(gym.Env):
 
 # del model
 
-model = PPO.load ("models/1671227467/810000")
+# model = PPO.load ("models/1671227467/810000")
 
-for i in range(10):
-    action, _ = model.predict([[-1,-1,-1,1,-1],[-1,-1,-1,1,-1],[-1,-1,-1,-1,-1],[-1,1,-1,-1,-1],[-1,-1,-1,-1,-1]])
-    print(np.unravel_index(action, (s.GRID_SIZE,s.GRID_SIZE)))
+# for i in range(10):
+#     action, _ = model.predict([[-1,-1,-1,1,-1],[-1,-1,-1,1,-1],[-1,-1,-1,-1,-1],[-1,1,-1,-1,-1],[-1,-1,-1,-1,-1]])
+#     print(np.unravel_index(action, (s.GRID_SIZE,s.GRID_SIZE)))

@@ -4,7 +4,7 @@ import random
 import numpy as np
 
 from game_variables import Settings as s
-from game_physics import Game
+# from game_physics import Game
 import test
 
 
@@ -71,7 +71,7 @@ def draw_ship(player, l=0, t=0):
         pygame.draw.rect(WINDOW,s.YELLOW, ship_block, width = 1, border_radius=10)
         
             
-def run_game(human_1_bool, human_0_bool, view_opponent):  
+def run_game(human_1_bool, human_0_bool, view_opponent, strategy_1, strategy_2):  
     
     global WINDOW, game
     

@@ -3,8 +3,11 @@ from game_variables import Settings as s
 import numpy as np
 import random 
 from copy import deepcopy
+import pandas as pd
 
 from stable_baselines3 import PPO
+
+
 
 class Ship:
     
@@ -242,11 +245,17 @@ class Strategy:
     def sequentialPlayer(moves):
         return moves[0]
     
+    @staticmethod
+    def MCTSPlayer(player_1,player_2, max_depth):
+        return MCTS(player_1, player_2, max_depth).MCTSPlayer()
     
+    @staticmethod
+    def QLearnPlayer(model, board):
+        return np.unravel_index(model.predict(board)[0], (s.GRID_SIZE, s.GRID_SIZE))
 
 
 class Game:
-    def __init__(self, grid_size, fleet) -> None:
+    def __init__(self, grid_size, fleet, model=None) -> None:
         s.GRID_SIZE = grid_size
         s.Fleet = fleet
         
@@ -255,7 +264,8 @@ class Game:
 
         self.turn = True
         
-        self.model = PPO.load ("models/1671227467/820000")
+        # self.model = PPO.load ("models/5/1671268825/1600000.zip")
+        if model : self.model = PPO.load (model)
         
     def run(self):
         
@@ -264,43 +274,51 @@ class Game:
             
 
             if self.turn:
-                target = Strategy.sequentialPlayer(self.player_1.possibleMoves())
-                # target = MCTS(self.player_1,self.player_2, 100).MCTSPlayer()
+                # target = Strategy.sequentialPlayer(self.player_1.possibleMoves())
+                target = Strategy.MCTSPlayer(self.player_1, self.player_2, 50)
+                # target = Strategy.QLearnPlayer(self.model, self.player_2.SearchGrid.getBoard())
                 
-                res = Actions.shootTarget(self.player_1, self.player_2, target)
-                
+                res = Actions.shootTarget(self.player_1, self.player_2, target)                
                 # print("Player 1 targeted: ", target, "H" if res else "M")
                 
                 self.turn = not self.turn
-            else:
-                
-                # self.player_1.ShipGrid.printBoard()
-                # print()
-                # self.player_2.SearchGrid.printBoard()
-                
+            else:   
                 # # target = Strategy.sequentialPlayer(self.player_2.possibleMoves())
-                # target = MCTS(self.player_2,self.player_1, 100).MCTSPlayer()
-                target = np.unravel_index(self.model.predict(self.player_2.SearchGrid.getBoard())[0], (s.GRID_SIZE, s.GRID_SIZE))
+                # target = Strategy.MCTSPlayer(self.player_2, self.player_1, 100)
+                target = Strategy.QLearnPlayer(self.model, self.player_2.SearchGrid.getBoard())
                 
                 res = Actions.shootTarget(self.player_2, self.player_1, target)
-                
-                # print("Player 2 targeted: ", target, "H" if res else "M")    
-                # if res: self.player_2.SearchGrid.printBoard()
+
                 
                 self.turn = not self.turn
 
 
-    def runSimulationMode(self):
+    def runSimulationMode(self, strat):
         
-        # Testing algoirthm of how quick it can explore
-        while not self.player_2.isDefeated():
-            # target = MCTS(self.player_1,self.player_2, 60).MCTSPlayer()
+        # Plays one full game in one player mode
+        
+        strategy = {
+            'baseline-sequential': lambda : Strategy.sequentialPlayer(self.player_1.possibleMoves()),
+            'tree': lambda: Strategy.MCTSPlayer(self.player_1, self.player_2, 50),
+            'qlearning': lambda: Strategy.QLearnPlayer(self.model, self.player_1.SearchGrid.getBoard())
+        }
+        
+        steps = 0
+        
+        while not self.player_1.winner:
+            # target = Strategy.sequentialPlayer(self.player_1.possibleMoves())
+            # target = Strategy.MCTSPlayer(self.player_1, self.player_2, 50)
+            # target = Strategy.QLearnPlayer(self.model, self.player_1.SearchGrid.getBoard())
             
-            target = np.unravel_index(self.model.predict(self.player_1.SearchGrid.getBoard())[0], (s.GRID_SIZE, s.GRID_SIZE))
-            
-            res = Actions.shootTarget(self.player_1, self.player_2, target)
-            # print("Player 1 targeted: ", target, "H" if res else "M")
+            target = strategy[strat]( )
+            # print(target)
+            if target in self.player_1.possibleMoves():
+                res = Actions.shootTarget(self.player_1, self.player_2, target)
+                # print("Player 1 targeted: ", target, "H" if res else "M")
 
+                steps += 1
+        
+        return steps, self.isWinner().score(), self.isWinner().SearchGrid.getBoard()
       
     def isWinner(self):
         return self.player_1 if self.player_1.winner else self.player_2
@@ -512,40 +530,61 @@ class MCTS:
 
 
 
-#-------------------------
+# #-------------------------
 
-player_1_wins = 0
-sample = 1000
-for i in range(sample):
-    # print("Playing game:", i+1, end="\t\t")
-    g = Game(5, [2,3,4])
-    g.run()
+# player_1_wins = 0
+# sample = 100
+# for i in range(sample):
+#     # print("Playing game:", i+1, end="\t\t")
+#     g = Game(5, [2,3,4], model="models/5/1671268825/1500000.zip")
+#     g.run()
     
-    player_1_wins += 1 if g.isWinner() == g.player_1 else 0
+#     player_1_wins += 1 if g.isWinner() == g.player_1 else 0
     
-    # print("Won by", g.isWinner().name, " Score:", round(g.isWinner().score(),5))
-    # g.isWinner().SearchGrid.printBoard()
+#     # print("Won by", g.isWinner().name, " Score:", round(g.isWinner().score(),5))
+#     # g.isWinner().SearchGrid.printBoard()
     
 
-player_2_wins = sample - player_1_wins
+# player_2_wins = sample - player_1_wins
 
-print("Player 1 Wins: ", player_1_wins)
-print("Player 2 Wins: ", player_2_wins)
+# print("Player 1 Wins: ", player_1_wins)
+# print("Player 2 Wins: ", player_2_wins)
     
 
 # #-------------------------
 
-# algorithm_score = []
 
-# sample = 100
-# for i in range(sample):
 
-#     g = Game(5, [2,3,4])
-#     # g.player_2.ShipGrid.printBoard()
-#     g.runSimulationMode()
-#     algorithm_score.append(g.player_1.score())
-#     print(f"Experiment: {i} Score :  {g.player_1.score()}")
-#     # g.player_1.SearchGrid.printBoard()
+test_set ={
+    5: [5,[2,3,4]],
+    7: [7,[2,3,4]],
+    10: [10,[2,3,4]],
+    15: [15,[2,3,4]],
+}
+
+exp_result = pd.DataFrame(columns=['input_value','iterations', 'score', 'board'])
+exp_result = exp_result.astype("object")
+
+
+sample = 100
+
+input_config = 5
+
+for i in range(sample):
+
+    gm = Game(test_set[input_config][0],test_set[input_config][1], model="models/5/1671268825/1500000.zip")
     
-# print("Best score: ", max(algorithm_score))
-# print("Average Score: ", np.mean(algorithm_score))
+    # g.player_2.ShipGrid.printBoard()
+
+    iter, sc, brd = gm.runSimulationMode(strat='tree')
+    
+    sim_res = [ input_config ,iter,sc, brd]
+    
+    exp_result = pd.concat([exp_result, pd.DataFrame([sim_res], columns = exp_result.columns)], ignore_index=False)
+    
+    print(f"Experiment: {i} Score :  {sc} Moves: {iter}")
+    # g.player_1.SearchGrid.printBoard()
+    
+print("Best score: ", exp_result['score'].max())
+print("Average Score: ",exp_result['score'].mean())
+print("Average Moves: ",exp_result['iterations'].mean())
