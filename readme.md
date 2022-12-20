@@ -35,6 +35,14 @@ The gamelplay looks like below
 
 ![plot](/Assets/gameplay_1.png)
 
+The game is interacted using a mouse click. The game shows 2 grid for each player. The left grid is the Ship Grid for a player, to mark where its ships are located and also mark any hits that were made by the opponent. You cannot interact with this grid. 
+
+The right grid is your search effort. If the player is a human player then you can click in the grid boxes on the right to explore a block on the opponent's ship grid. If it is a HIT it will show a YELLOW dot and a BLUE if its a MISS.
+
+You can only click on the search grid (right grid) when it's your chance and you are a human player. The top is player 1 and the bottom is player 2. 
+
+
+
 The analysis of the algorithm can be found in the the gameplay_analysis.ipynb
 
 
